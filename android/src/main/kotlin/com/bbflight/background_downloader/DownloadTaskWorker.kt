@@ -75,8 +75,11 @@ class DownloadTaskWorker(applicationContext: Context, workerParams: WorkerParame
             val usesUri = directoryUri != null
             eTagHeader = connection.headerFields["ETag"]?.first()
             val acceptRangesHeader = connection.headerFields["Accept-Ranges"]
+            val acceptRangesHeaderValue = acceptRangesHeader?.firstOrNull() 
             serverAcceptsRanges =
-                acceptRangesHeader?.first() == "bytes" || connection.responseCode == 206
+                (acceptRangesHeaderValue == "bytes" ||
+                 (acceptRangesHeaderValue != null && acceptRangesHeaderValue.matches(Regex("^\\d+-\\d*$")))) ||
+                 connection.responseCode == 206
             if (task.allowPause && !usesUri) {
                 taskCanResume = serverAcceptsRanges
                 processCanResume(
