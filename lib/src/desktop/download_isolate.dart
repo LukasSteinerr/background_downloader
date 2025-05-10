@@ -60,9 +60,12 @@ Future<void> doDownloadTask(DownloadTask task, ResumeData? resumeData,
     final response = await client.send(request);
     if (!isCanceled) {
       eTagHeader = response.headers['etag'] ?? response.headers['ETag'];
-      final acceptRangesHeader = response.headers['accept-ranges'];
+      final acceptRangesHeaderValue = response.headers['accept-ranges'];
       final serverAcceptsRanges =
-          acceptRangesHeader == 'bytes' || response.statusCode == 206;
+          (acceptRangesHeaderValue == 'bytes' ||
+              (acceptRangesHeaderValue != null &&
+                  RegExp(r'^\d+-\d*$').hasMatch(acceptRangesHeaderValue))) ||
+          response.statusCode == 206;
       var taskCanResume = false;
       if (downloadTask.allowPause) {
         // determine if this task can be paused
