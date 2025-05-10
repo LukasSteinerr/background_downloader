@@ -242,8 +242,10 @@ public class UrlSessionDelegate : NSObject, URLSessionDelegate, URLSessionDownlo
                 BDPlugin.progressInfo[task.taskId] = (lastProgressUpdateTime: 0, lastProgressValue: 0.0, lastTotalBytesDone: 0, lastNetworkSpeed: -1.0)
             })
             if task.allowPause {
-                let acceptRangesHeader = (downloadTask.response as? HTTPURLResponse)?.allHeaderFields["Accept-Ranges"]
-                let taskCanResume = acceptRangesHeader as? String == "bytes"
+                let acceptRangesHeaderValue = (downloadTask.response as? HTTPURLResponse)?.allHeaderFields["Accept-Ranges"] as? String
+                let isBytes = acceptRangesHeaderValue == "bytes"
+                let isNumericRange = acceptRangesHeaderValue?.range(of: "^\\d+-\\d*$", options: .regularExpression) != nil
+                let taskCanResume = isBytes || isNumericRange
                 processCanResume(task: task, taskCanResume: taskCanResume)
                 if taskCanResume {
                     BDPlugin.propertyLock.withLock({
